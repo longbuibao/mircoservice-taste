@@ -1,20 +1,12 @@
 const express = require('express');
 const cors = require('cors');
+const axios = require('axios');
 
 const app = express();
 
 const posts = {};
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
-app.use(cors());
-
-app.get('/posts', (req, res) => {
-  res.send(posts);
-});
-
-app.post('/events', (req, res) => {
-  const { type, data } = req.body;
+const handleEvents = (type, data) => {
   if (type === 'PostCreate') {
     const { id, title } = data;
     posts[id] = { id, title, comments: [] };
@@ -31,8 +23,31 @@ app.post('/events', (req, res) => {
     comment.status = status;
     comment.content = content;
   }
+};
 
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
+app.use(cors());
+
+app.get('/posts', (req, res) => {
   res.send(posts);
 });
 
-app.listen(4002, () => console.log('Query running at 4002'));
+app.post('/events', (req, res) => {
+  const { type, data } = req.body;
+  handleEvents(type, data);
+  res.send(posts);
+});
+
+app.listen(4002, async () => {
+  console.log('Query running at 4002');
+  try {
+    const events = (await axios.get('http://localhost:4005/events')).data;
+    for (let event of events) {
+      console.log(`Processing event: ${event.type}`);
+      handleEvents(event.type, event.data);
+    }
+  } catch (error) {
+    console.log(error.message);
+  }
+});
