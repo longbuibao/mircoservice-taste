@@ -1,8 +1,9 @@
-import React from "react";
-import PostCreate from "./PostCreate";
-import PostList from "./PostList";
+import React from 'react';
+import PostCreate from './PostCreate';
+import PostList from './PostList';
 
 const App = () => {
+  console.log('LONG BUI BAO FROM SKAFFOLD');
   return (
     <div className="container">
       <h1>Create Post</h1>
